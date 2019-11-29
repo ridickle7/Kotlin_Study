@@ -13,7 +13,6 @@ class Address {
 }
 ```
 프로퍼티를 사용하기 위해 단순하게 이름으로 참조가 가능합니다.
-To use a property, simply refer to it by name:
 
 ```
 fun copyAddress(address: Address): Address {
@@ -24,6 +23,8 @@ fun copyAddress(address: Address): Address {
     return result
 }
 ```
+
+여기에서 [접근자](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.reflect/-k-property/-accessor/index.html)는 **getter setter** 와 같은 것을 말합니다.  
 
 ## Getters and Setters
 프로퍼티를 선언하는 전체 구문은 아래와 같습니다.
@@ -93,9 +94,9 @@ var setterWithAnnotation: Any? = null
 ```
 
 ## Backing Fields
-필드는 코틀린 클래스에 직접적으로 선언될 수 없습니다.  
-그러나 Backing field에 프로퍼티가 필요한 경우, 코틀린은 자동으로 제공해줍니다.
-Backing field는 필드 식별자를 활용해 접근자에서 참조될 수 있습니다.
+필드는 코틀린 클래스에 직접적으로 사용될 수 없습니다.  
+코틀린은 필드라는 식별자를 통해 접근할 수 있는 Automatic Backing field 를 제공합니다.
+Backing field 는 필드 식별자를 활용해 접근자에서만 참조될 수 있습니다.
 
 ```
 var counter = 0 // Note: 초기 값을 backing field를 직접 할당합니다.
@@ -106,18 +107,27 @@ var counter = 0 // Note: 초기 값을 backing field를 직접 할당합니다.
 필드 식별자는 프로퍼티의 식별자 내에서만 사용이 가능합니다.
 
 ### Backing Field는 만약 최소 하나의 접근자에서 프로퍼티로 만들어질 것입니다.
-프로퍼티 중 하나 이상의 접근자의 기본 구현을 사용하거나, 커스텀 접근자가 필드 식별자를 통해 해당 속성을 참조하는 경우 속성에 대한 Backing Field 가 생성됩니다.  
-예를 들어 아래의 경우는 Backing Field가 없을 것입니다.
+
+1. 프로퍼티 중 최소 1개 이상의 접근자의 기본 구현 방식을 사용하거나,
+2. 커스텀 접근자가 필드 식별자를 참조하는 경우  
+
+**Backing Field 가 생성됩니다. (both 1 and 2)**  
 
 ```
 val isEmpty: Boolean
     get() = this.size == 0
 ```
 
+위의 경우는 Backing Field가 생성되지 않습니다.
+(2번 위배)
+
 
 ============================================ 여기서부터 다시 시작 ============================================
-Backing Properties
-If you want to do something that does not fit into this "implicit backing field" scheme, you can always fall back to having a backing property:
+## Backing Properties
+만약 암시적 Backing Field 문법이 맞지 않는 경우
+
+If you want to do something that does not fit into this "implicit backing field" scheme, 
+you can always fall back to having a backing property:
 
 private var _table: Map<String, Int>? = null
 public val table: Map<String, Int>
