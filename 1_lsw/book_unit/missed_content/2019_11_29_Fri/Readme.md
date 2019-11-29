@@ -65,11 +65,8 @@ val isEmpty: Boolean
     get() = this.size == 0
 ```
 만약 우리가 커스텀 getter을 선언한다면, 이는 우리가 프로퍼티에 할당한 값대로 항상 불려질 것입니다.
-If we define a custom setter, it will be called every time we assign a value to the property. 
-
 
 #### 커스텀 setter의 예제는 아래와 같습니다 : 
-A custom setter looks like this:
 
 ```
 var stringRepresentation: String
@@ -106,14 +103,19 @@ var counter = 0 // Note: 초기 값을 backing field를 직접 할당합니다.
         if (value >= 0) field = value
     }
 ```
-The field identifier can only be used in the accessors of the property.
+필드 식별자는 프로퍼티의 식별자 내에서만 사용이 가능합니다.
 
-A backing field will be generated for a property if it uses the default implementation of at least one of the accessors, or if a custom accessor references it through the field identifier.
+### Backing Field는 만약 최소 하나의 접근자에서 프로퍼티로 만들어질 것입니다.
+프로퍼티 중 하나 이상의 접근자의 기본 구현을 사용하거나, 커스텀 접근자가 필드 식별자를 통해 해당 속성을 참조하는 경우 속성에 대한 Backing Field 가 생성됩니다.  
+예를 들어 아래의 경우는 Backing Field가 없을 것입니다.
 
-For example, in the following case there will be no backing field:
-
+```
 val isEmpty: Boolean
     get() = this.size == 0
+```
+
+
+============================================ 여기서부터 다시 시작 ============================================
 Backing Properties
 If you want to do something that does not fit into this "implicit backing field" scheme, you can always fall back to having a backing property:
 
