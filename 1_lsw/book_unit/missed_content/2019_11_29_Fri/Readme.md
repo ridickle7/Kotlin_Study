@@ -121,14 +121,10 @@ val isEmpty: Boolean
 위의 경우는 Backing Field가 생성되지 않습니다.
 (2번 위배)
 
-
-============================================ 여기서부터 다시 시작 ============================================
 ## Backing Properties
-만약 암시적 Backing Field 문법이 맞지 않는 경우
+만약 암시적 Backing Field 문법이 맞지 않는 경우, Backing Property를 가질 수 있다.
 
-If you want to do something that does not fit into this "implicit backing field" scheme, 
-you can always fall back to having a backing property:
-
+```
 private var _table: Map<String, Int>? = null
 public val table: Map<String, Int>
     get() {
@@ -137,49 +133,67 @@ public val table: Map<String, Int>
         }
         return _table ?: throw AssertionError("Set to null by another thread")
     }
-On the JVM: The access to private properties with default getters and setters is optimized so no function call overhead is introduced in this case.
+```
+JVM 위에서: 일반 getter와 setter 접근자를 통해 private property들에 접근하는 경우  
+함수 호출 오버 헤드가 발생하지 않도록 최적화되었습니다.  
+**-> 왠지 여기에서 오늘 내가 제대로 답변하지 못했던 내용에 대한 실마리가 있는 것 같기도 하고...?**
 
-Compile-Time Constants
-Properties the value of which is known at compile time can be marked as compile time constants using the const modifier. Such properties need to fulfil the following requirements:
+## Compile-Time Constants
+const 를 활용하여 Compile-Time Constants로 표현할 수 있습니다.
+이 property 들은 아래의 요구사항들을 이행할 필요가 있습니다.
 
-Top-level, or member of an object declaration or a companion object.
-Initialized with a value of type String or a primitive type
-No custom getter
-Such properties can be used in annotations:
+상위 레벨에 있거나, object의 멤버이거나, companion object 이거나
+String 또는 primitive 타입 변수로 초기화 된 경우  
+custom Getter 가 없는 경우 
 
+이 Property들은 아래처럼 활용될 수 있습니다.
+
+```
 const val SUBSYSTEM_DEPRECATED: String = "This subsystem is deprecated"
-​
 @Deprecated(SUBSYSTEM_DEPRECATED) fun foo() { ... }
-Late-Initialized Properties and Variables
-Normally, properties declared as having a non-null type must be initialized in the constructor. However, fairly often this is not convenient. For example, properties can be initialized through dependency injection, or in the setup method of a unit test. In this case, you cannot supply a non-null initializer in the constructor, but you still want to avoid null checks when referencing the property inside the body of a class.
+```
 
-To handle this case, you can mark the property with the lateinit modifier:
+## Late-Initialized Properties and Variables
 
+일반적으로 porperty들은 not null 데이터로 선언되며 반드시 초기화를 시켜주어야 합니다.
+그러나 이는 불편할 때가 있습니다. 예를 들어 property들이 의존성 주입을 통해 초기화 될 경우 또는 unit test에서 SetUp 함수를 사용할 때 등의 경우가 있습니다.
+이런 경우 생성자에 null이 아닌 초기값을 제공해줄 수 없지만, 클래스 본문 내에서 Property 를 참조 할 때 null 검사를 피하고 싶습니다.
+
+이를 핸들링하기 위해 우리는 lateinit 을 활용할 수 있습니다.
+```
 public class MyTest {
     lateinit var subject: TestSubject
-​
+
     @SetUp fun setup() {
         subject = TestSubject()
     }
-​
+
     @Test fun test() {
         subject.method()  // dereference directly
     }
 }
-The modifier can be used on var properties declared inside the body of a class (not in the primary constructor, and only when the property does not have a custom getter or setter) and, since Kotlin 1.2, for top-level properties and local variables. The type of the property or variable must be non-null, and it must not be a primitive type.
+```
 
-Accessing a lateinit property before it has been initialized throws a special exception that clearly identifies the property being accessed and the fact that it hasn't been initialized.
+lateinit 제약사항
+1. 클래스 본문 내 var property에서 사용됨
+2. (Kotlin 1.2 버전 이후) 상위 레벨 프로퍼티와 로컬 변수에 사용 가능
+2. 기본 생성자에서 선언된 property는 불가능
+3. 오직 커스텀 getter와 setter을 가지지 않는 property 만 가능
 
-Checking whether a lateinit var is initialized (since 1.2)
-To check whether a lateinit var has already been initialized, use .isInitialized on the reference to that property:
+초기화 되지 않은 lateinit property에 접근하면 exception이 발생합니다.
 
+### lateinit 변수가 초기화 됬는지 확인하는 법 (Kotlin 1.2 버전 이후)
+
+"프로퍼티.isInitialized" 를 통해 확인 가능  
+```
 if (foo::bar.isInitialized) {
     println(foo.bar)
 }
-This check is only available for the properties that are lexically accessible, i.e. declared in the same type or in one of the outer types, or at top level in the same file.
+```
+이 확인은 오직 property에 접근이 가능한 경우에 대해서만 가능합니다.
+즉, 동일한 타입 내에서의 선언 또는 outer 타입 중 하나 내에서의 선언 또는 동일한 파일 안에서의 상위 레벨에서 접근 가능한 경우에 대해서만 가능합니다.
 
-Overriding Properties
-See Overriding Properties
+============================================ 여기서부터 다시 시작 ============================================
 
 Delegated Properties
 The most common kind of properties simply reads from (and maybe writes to) a backing field. On the other hand, with custom getters and setters one can implement any behaviour of a property. Somewhere in between, there are certain common patterns of how a property may work. A few examples: lazy values, reading from a map by a given key, accessing a database, notifying listener on access, etc.
